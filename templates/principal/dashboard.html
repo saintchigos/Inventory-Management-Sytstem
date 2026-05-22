@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Principal Dashboard | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<!-- Header Section -->
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 pb-2 border-bottom">
+    <div>
+        <h1 class="h2 fw-bold text-dark mb-1">Principal Dashboard</h1>
+        <p class="text-muted mb-sm-0">Real-time overview of institutional inventory status.</p>
+    </div>
+    <div>
+        <a href="{% url 'export_inventory_excel' %}" class="btn btn-success d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-file-earmark-excel me-2"></i> Export Excel Report
+        </a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-5">
+    <!-- Total Inventory Items -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-4 border-primary shadow-sm bg-white">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted fw-medium text-uppercase tracking-wider small">Total Unique Items</span>
+                    <h2 class="display-6 fw-bold text-dark mt-1 mb-0">{{ total_items }}</h2>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3 text-primary">
+                    <i class="bi bi-boxes fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Quantity -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-4 border-success shadow-sm bg-white">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted fw-medium text-uppercase tracking-wider small">Total Stock On Hand</span>
+                    <h2 class="display-6 fw-bold text-dark mt-1 mb-0">{{ total_quantity }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-3 text-success">
+                    <i class="bi bi-calculator fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-4 border-danger shadow-sm bg-white">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted fw-medium text-uppercase tracking-wider small">Low Stock Alerts</span>
+                    <h2 class="display-6 fw-bold text-danger mt-1 mb-0">{{ low_stock_items.count }}</h2>
+                </div>
+                <div class="bg-danger bg-opacity-10 p-3 rounded-3 text-danger">
+                    <i class="bi bi-exclamation-triangle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Chart Section -->
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">Inventory Distribution by Category</h5>
+            </div>
+            <div class="card-body px-4 pb-4 pt-0">
+                <div style="position: relative; height: 320px; width: 100%;">
+                    <canvas id="inventoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Alerts Table Section -->
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-danger mb-0">Critical Stock Alerts</h5>
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2.5 py-1">{{ low_stock_items.count }} Action Required</span>
+            </div>
+            <div class="card-body px-0 py-0 overflow-auto" style="max-height: 320px;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="ps-4">Item</th>
+                                <th class="text-center">Qty / Min</th>
+                                <th class="pe-4">Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                            <tr>
+                                <td class="ps-4 fw-medium text-dark">{{ item.name }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger rounded-pill px-2">{{ item.quantity }}</span> 
+                                    <small class="text-muted">/</small> 
+                                    <span class="text-muted small">{{ item.minimum_stock }}</span>
+                                </td>
+                                <td class="pe-4 text-muted small">{{ item.location }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-5">
+                                    <i class="bi bi-check-circle text-success display-6 d-block mb-2"></i>
+                                    All inventory thresholds are completely secure.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Inventory Overview -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+        <h5 class="fw-bold text-dark mb-0">Current Inventory Overview</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Item Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Location</th>
+                        <th class="pe-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="ps-4 fw-medium text-dark">{{ item.name }}</td>
+                        <td><span class="badge bg-light text-dark border px-2.5 py-1.5 fw-normal">{{ item.category }}</span></td>
+                        <td class="fw-semibold">{{ item.quantity }}</td>
+                        <td class="text-muted">{{ item.location }}</td>
+                        <td class="pe-4">
+                            {% if item.quantity <= item.minimum_stock %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 rounded-pill px-2.5 py-1.5 d-inline-flex align-items-center">
+                                    <span class="p-1 bg-danger rounded-circle me-1.5 d-inline-block" style="width:6px; height:6px;"></span> Low Stock
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-2.5 py-1.5 d-inline-flex align-items-center">
+                                    <span class="p-1 bg-success rounded-circle me-1.5 d-inline-block" style="width:6px; height:6px;"></span> In Stock
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Styling Logic -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('inventoryChart');
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: JSON.parse('{{ category_labels_json|escapejs }}'),
+                datasets: [{
+                    label: 'Items in Category',
+                    data: JSON.parse('{{ category_totals_json|escapejs }}'),
+                    backgroundColor: '#0d6efd', // Matches primary theme color
+                    hoverBackgroundColor: '#0b5ed7',
+                    borderRadius: 6, // Smooth rounded bars
+                    borderWidth: 0,
+                    barThickness: 24
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // No need for repetitive legend labels
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#6c757d',
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#f1f3f5'
+                        },
+                        ticks: {
+                            color: '#6c757d',
+                            font: {
+                                family: "'Inter', sans-serif"
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

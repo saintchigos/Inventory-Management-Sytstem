@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Storesman Dashboard | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<!-- Header Section -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+    <div>
+        <h1 class="h2 fw-bold text-dark mb-1">Storesman Dashboard</h1>
+        <p class="text-muted mb-md-0">Track real-time stock logs, allocations, and threshold notifications.</p>
+    </div>
+    <!-- Clean Structured Action Controls -->
+    <div class="mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+        <a href="{% url 'inventory_list' %}" class="btn btn-light border fw-medium px-3 d-inline-flex align-items-center">
+            <i class="bi bi-box-seam me-2"></i> View Inventory
+        </a>
+        <a href="{% url 'allocation_list' %}" class="btn btn-light border fw-medium px-3 d-inline-flex align-items-center">
+            <i class="bi bi-journal-text me-2"></i> View Allocations
+        </a>
+        <a href="{% url 'create_allocation' %}" class="btn btn-success fw-medium px-3 d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-share me-2"></i> Allocate Stock
+        </a>
+        <a href="{% url 'add_stock' %}" class="btn btn-primary fw-medium px-3 d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i> Add Stock
+        </a>
+    </div>
+</div>
+
+<!-- Refined Analytic Stat Cards -->
+<div class="row g-4 mb-5">
+    <!-- Total Items SKU Tracked -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-primary border-4 shadow-sm bg-white">
+            <div class="card-body p-4">
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Total Inventory Items</span>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h2 class="display-6 fw-bold text-dark mb-0">{{ total_items }}</h2>
+                    <div class="bg-primary bg-opacity-10 p-2.5 rounded text-primary">
+                        <i class="bi bi-tags-fill fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Bulk Mass Units -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-success border-4 shadow-sm bg-white">
+            <div class="card-body p-4">
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Total Quantity</span>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h2 class="display-6 fw-bold text-dark mb-0">{{ total_quantity }}</h2>
+                    <div class="bg-success bg-opacity-10 p-2.5 rounded text-success">
+                        <i class="bi bi-layer-forward fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Low Stock Warnings -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-danger border-4 shadow-sm bg-white">
+            <div class="card-body p-4">
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Low Stock Items</span>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h2 class="display-6 fw-bold text-danger mb-0">{{ low_stock_items.count }}</h2>
+                    <div class="bg-danger bg-opacity-10 p-2.5 rounded text-danger">
+                        <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Split Metric Layout Workspace -->
+<div class="row g-4 mb-5">
+    <!-- Categories Breakdown Graph -->
+    <div class="col-12 col-lg-7">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="fw-bold text-dark mb-0">Inventory By Category</h5>
+            </div>
+            <div class="card-body px-4 pb-4 pt-0">
+                <div style="position: relative; height: 280px; width: 100%;">
+                    <canvas id="storesmanChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actionable Real-Time Replenishment Log -->
+    <div class="col-12 col-lg-5">
+        <div class="card border-0 shadow-sm h-100 bg-white">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">Low Stock Alerts</h5>
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2.5 py-1 fw-bold">Requires Action</span>
+            </div>
+            <div class="card-body p-0 overflow-auto" style="max-height: 280px;">
+                <div class="list-group list-group-flush">
+                    {% for item in low_stock_items %}
+                    <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center border-0 border-bottom">
+                        <div>
+                            <span class="fw-bold text-dark d-block mb-0.5">{{ item.name }}</span>
+                            <span class="text-muted small">Location: <span class="text-secondary fw-medium">{{ item.location }}</span></span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger rounded-pill fw-medium px-2 py-1 mb-1 d-inline-block">Remaining: {{ item.quantity }}</span>
+                            <span class="text-muted d-block x-small" style="font-size: 0.75rem;">Min Required: {{ item.minimum_stock }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-shield-check text-success display-6 d-block mb-2"></i>
+                        <span class="small fw-medium">All physical stock values meet baseline constraints.</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ledger Inventory Record Panel -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Current Inventory Registry</h5>
+        <span class="text-muted small fw-medium">Active Warehouse Catalog</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item Details</th>
+                        <th class="py-3">Category Classification</th>
+                        <th class="py-3">Quantity</th>
+                        <th class="py-3">Location Bay</th>
+                        <th class="py-3">Status Badge</th>
+                        <th class="pe-4 py-3 text-end">Record Modifications</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+                        <td><span class="badge bg-light text-dark border px-2 py-1 fw-normal">{{ item.category }}</span></td>
+                        <td class="fw-medium">{{ item.quantity }}</td>
+                        <td class="text-muted small">{{ item.location }}</td>
+                        <td>
+                            {% if item.quantity <= item.minimum_stock %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1 rounded-pill fw-medium">
+                                    <i class="bi bi-arrow-down-short me-0.5"></i> Low Stock
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1 rounded-pill fw-medium">
+                                    <i class="bi bi-check-circle me-0.5"></i> In Stock
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'edit_stock' item.id %}" class="btn btn-sm btn-light border px-2.5 py-1 text-dark" title="Modify Details">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                </a>
+                                <a href="{% url 'delete_stock' item.id %}" class="btn btn-sm btn-outline-danger px-2.5 py-1" title="Purge Record">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5 fw-medium">No inventory items available inside database cache.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Safe Chart Injection Implementation Block -->
+<script>
+    (function() {
+        function initStoresmanChart() {
+            const ctx = document.getElementById('storesmanChart');
+            if (!ctx) return;
+
+            // Safe parsing catch-blocks to prevent chart rendering failures
+            let labelsArray = [];
+            let totalsArray = [];
+            
+            try {
+                labelsArray = JSON.parse('{{ category_labels_json|escapejs }}') || [];
+                totalsArray = JSON.parse('{{ category_totals_json|escapejs }}') || [];
+            } catch (e) {
+                console.error("Failed parsing context metrics from view:", e);
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labelsArray,
+                    datasets: [{
+                        label: 'Stock Quantity',
+                        data: totalsArray,
+                        backgroundColor: '#0d6efd',
+                        hoverBackgroundColor: '#0b5ed7',
+                        borderRadius: 4,
+                        barThickness: 24
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#6c757d', font: { size: 12 } }
+                        },
+                        y: {
+                            grid: { color: '#f1f3f5' },
+                            ticks: { color: '#6c757d', beginAtZero: true }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Asynchronous Script Injection Guard checking if base.html contains Chart.js
+        if (typeof Chart === 'undefined') {
+            const chartScript = document.createElement('script');
+            chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            chartScript.onload = initStoresmanChart;
+            document.head.appendChild(chartScript);
+        } else {
+            document.addEventListener("DOMContentLoaded", initStoresmanChart);
+            // Handle instantaneous execution loop if DOM is already fully loaded
+            if (document.readyState === "interactive" || document.readyState === "complete") {
+                initStoresmanChart();
+            }
+        }
+    })();
+</script>
+
+{% endblock %}

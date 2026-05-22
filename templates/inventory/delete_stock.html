@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Stock Item | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center my-md-5">
+    <div class="col-12 col-md-8 col-lg-5">
+        <!-- Main Deletion Security Confirmation Wrapper -->
+        <div class="card border-0 shadow-lg bg-white overflow-hidden">
+            <!-- Alert Border Header Accent Line -->
+            <div class="bg-danger" style="height: 6px;"></div>
+            
+            <div class="card-body p-4 p-sm-5 text-center">
+                <!-- Warning Visual Center Indicator Icon -->
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3 mb-4 animate bounce-in">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                </div>
+                
+                <h2 class="h4 fw-bold text-dark mb-2">Confirm Delete Action</h2>
+                <p class="text-muted small mb-4">This action is permanent and cannot be reversed. Please ensure you intend to remove this asset baseline completely.</p>
+                
+                <!-- Target Confirmation Details Block -->
+                <div class="bg-light border rounded-3 p-3 mb-4 text-start">
+                    <span class="text-muted small d-block fw-medium text-uppercase tracking-wider mb-1">Target Inventory Item</span>
+                    <strong class="text-dark fs-5 d-flex align-items-center">
+                        <i class="bi bi-box-seam me-2 text-secondary"></i>
+                        {{ item.name }}
+                    </strong>
+                    {% if item.location %}
+                        <small class="text-muted d-block mt-1">Located at: <span class="fw-medium text-dark">{{ item.location }}</span></small>
+                    {% endif %}
+                </div>
+
+                <!-- Protected Transaction Submit Control Forms -->
+                <form method="POST" class="d-flex flex-column gap-2">
+                    {% csrf_token %}
+                    
+                    <button type="submit" class="btn btn-danger btn-lg w-100 fw-medium fs-6 py-2.5 shadow-sm d-inline-flex align-items-center justify-content-center">
+                        <i class="bi bi-trash me-2"></i> Yes, Permanently Delete
+                    </button>
+                    
+                    <a href="{% url 'inventory_list' %}" class="btn btn-link link-secondary text-decoration-none fw-medium mt-1">
+                        Cancel, Keep Record
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

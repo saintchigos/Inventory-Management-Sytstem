@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Procurement Requests</h1>
+
+{% if user.role == 'procurement' %}
+
+<a href="{% url 'create_procurement' %}"
+   class="btn btn-primary mb-3">
+
+    Create Request
+
+</a>
+
+{% endif %}
+
+<table class="table table-bordered">
+
+    <thead>
+
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Requested By</th>
+            <th>Actions</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for request in requests %}
+
+        <tr>
+
+            <td>{{ request.item.name }}</td>
+
+            <td>{{ request.requested_quantity }}</td>
+
+            <td>{{ request.status }}</td>
+
+            <td>{{ request.requested_by }}</td>
+
+            <td>
+
+                {% if user.role == 'accounts' and request.status == 'PENDING' %}
+
+                    <a href="{% url 'approve_request' request.id %}"
+                       class="btn btn-success btn-sm">
+
+                        Approve
+
+                    </a>
+
+                {% endif %}
+
+                {% if user.role == 'storesman' and request.status == 'APPROVED' %}
+
+                    <a href="{% url 'confirm_delivery' request.id %}"
+                       class="btn btn-warning btn-sm">
+
+                        Confirm Delivery
+
+                    </a>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Allocate Inventory | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<!-- Header & Context Area -->
+<div class="d-flex flex-column mb-4 pb-2 border-bottom">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+            <!-- SAFE FALLBACK: Changed from department_allocations to a simple dot or back history if name mismatch occurs -->
+            <li class="breadcrumb-item"><a href="../" class="text-decoration-none">Allocations Ledger</a></li>
+            <li class="breadcrumb-item active" aria-current="page">New Allocation</li>
+        </ol>
+    </nav>
+    <h1 class="h2 fw-bold text-dark mb-1">Allocate Inventory</h1>
+    <p class="text-muted mb-0">Distribute existing warehouse items to specific institutional departments.</p>
+</div>
+
+<div class="row">
+    <div class="col-12 col-md-8 col-lg-6">
+        <!-- Main Form Card Wrapper -->
+        <div class="card border-0 shadow-sm bg-white">
+            <div class="card-body p-4 p-sm-5">
+                <form method="POST" id="djangoAllocationForm" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Dynamic View Logic Context Errors -->
+                    {% if error %}
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                <div>{{ error }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Fallback Form Field Errors -->
+                    {% if form.errors and not error %}
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4" role="alert">
+                            <div class="d-flex">
+                                <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                                <div>
+                                    <span class="fw-bold">Please correct the missing information below.</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Target Form Injection Hook -->
+                    <div class="mb-4 styling-form-group">
+                        {{ form.as_p }}
+                    </div>
+
+                    <!-- Action Footers -->
+                    <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+                        <!-- SAFE FALLBACK: Points to relative parent directory rather than failing on dynamic reverse lookup lookup -->
+                        <a href="../" class="btn btn-light border fw-medium px-4">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 d-inline-flex align-items-center shadow-sm">
+                            <i class="bi bi-share me-2"></i> Confirm Allocation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-Styling Injection Utility Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formContainer = document.getElementById('djangoAllocationForm');
+        
+        const inputs = formContainer.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea');
+        const checkboxes = formContainer.querySelectorAll('input[type="checkbox"]');
+        
+        inputs.forEach(input => {
+            if(input.tagName === 'SELECT') {
+                input.classList.add('form-select', 'bg-light');
+            } else {
+                input.classList.add('form-control', 'bg-light');
+            }
+            
+            const parentParagraph = input.closest('p');
+            if (parentParagraph) {
+                parentParagraph.classList.add('mb-3');
+                const label = parentParagraph.querySelector('label');
+                if (label) {
+                    label.classList.add('form-label', 'text-muted', 'small', 'fw-medium', 'mb-1');
+                }
+            }
+        });
+
+        checkboxes.forEach(checkbox => {
+            checkbox.classList.add('form-check-input');
+            const parentParagraph = checkbox.closest('p');
+            if (parentParagraph) {
+                parentParagraph.classList.add('form-check', 'mb-3', 'ms-1');
+                const label = parentParagraph.querySelector('label');
+                if (label) {
+                    label.classList.add('form-check-label', 'fw-medium', 'text-dark', 'ms-1');
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    .styling-form-group p br {
+        display: none;
+    }
+</style>
+
+{% endblock %}

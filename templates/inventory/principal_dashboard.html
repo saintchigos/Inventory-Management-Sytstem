@@ -1,0 +1,22 @@
+@login_required
+@user_passes_test(is_principal)
+def principal_dashboard(request):
+
+    items = Item.objects.all()
+
+    total_items = items.count()
+
+    total_quantity = items.aggregate(
+        Sum('quantity')
+    )['quantity__sum']
+
+    low_stock_items = items.filter(
+        quantity__lte=models.F('minimum_stock')
+    )
+
+    return render(request, 'inventory/principal_dashboard.html', {
+        'items': items,
+        'total_items': total_items,
+        'total_quantity': total_quantity,
+        'low_stock_items': low_stock_items,
+    })

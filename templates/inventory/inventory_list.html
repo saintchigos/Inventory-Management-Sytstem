@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory List | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<!-- Header & Add Button Area -->
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 pb-3 border-bottom">
+    <div>
+        <h1 class="h2 fw-bold text-dark mb-1">Inventory Items</h1>
+        <p class="text-muted mb-sm-0">Manage and filter your institution's stock levels.</p>
+    </div>
+    {% if user.role == 'storesman' %}
+    <div class="mt-3 mt-sm-0">
+        <a href="{% url 'add_stock' %}" class="btn btn-primary d-inline-flex align-items-center shadow-sm fw-medium px-3">
+            <i class="bi bi-plus-lg me-2"></i> Add New Item
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filters Bar Card -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-body p-4">
+        <form method="GET" class="row g-3 align-items-end">
+            <!-- Search field with custom Icon styling -->
+            <div class="col-12 col-md-4">
+                <label class="form-label text-muted small fw-medium mb-1.5">Search Keyword</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted border-end-0 px-3"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" value="{{ request.GET.search }}" class="form-control bg-light border-start-0 ps-1" placeholder="Item name or category...">
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label class="form-label text-muted small fw-medium mb-1.5">Category</label>
+                <select name="category" class="form-select bg-light">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Low Stock Toggle Form Switch -->
+            <div class="col-12 col-sm-6 col-md-3 pb-md-1">
+                <div class="form-check form-switch h-100 d-flex align-items-center pt-md-4 mt-md-1">
+                    <input type="checkbox" name="low_stock" id="lowStockSwitch" class="form-check-input style-switch" style="cursor: pointer;" {% if request.GET.low_stock %}checked{% endif %}>
+                    <label class="form-check-label fw-medium text-dark ms-2" style="cursor: pointer;" for="lowStockSwitch">
+                        Show Low Stock Only
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filter Button -->
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-dark w-100 d-inline-flex align-items-center justify-content-center fw-medium">
+                    <i class="bi bi-funnel me-2"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Main Inventory Table Card -->
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item Name</th>
+                        <th class="py-3">Category</th>
+                        <th class="py-3">Quantity</th>
+                        <th class="py-3">Location</th>
+                        <th class="py-3">Status</th>
+                        {% if user.role == 'storesman' %}
+                            <th class="pe-4 py-3 text-end">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <!-- Item Details -->
+                        <td class="ps-4 fw-bold text-dark">{{ item.name }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-normal">
+                                {{ item.category }}
+                            </span>
+                        </td>
+                        <td class="fw-semibold text-secondary">{{ item.quantity }}</td>
+                        <td class="text-muted small">{{ item.location }}</td>
+                        
+                        <!-- Dynamic Modern Badges -->
+                        <td>
+                            {% if item.quantity <= item.minimum_stock %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 rounded-pill px-2.5 py-1.5 d-inline-flex align-items-center fw-medium">
+                                    <span class="p-1 bg-danger rounded-circle me-1.5 d-inline-block" style="width:6px; height:6px;"></span> Low Stock
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-2.5 py-1.5 d-inline-flex align-items-center fw-medium">
+                                    <span class="p-1 bg-success rounded-circle me-1.5 d-inline-block" style="width:6px; height:6px;"></span> In Stock
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Action Controls -->
+                        {% if user.role == 'storesman' %}
+                        <td class="pe-4 text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'edit_stock' item.id %}" class="btn btn-sm btn-light border px-2.5 py-1 text-dark" title="Edit Item">
+                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                </a>
+                                <a href="{% url 'delete_stock' item.id %}" class="btn btn-sm btn-outline-danger px-2.5 py-1" title="Delete Item">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if user.role == 'storesman' %}6{% else %}5{% endif %}" class="text-center text-muted py-5 fw-medium">
+                            <i class="bi bi-search display-6 d-block mb-3 text-muted"></i>
+                            No matching items found in the current inventory logs.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

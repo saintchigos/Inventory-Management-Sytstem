@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Create Procurement Request</h1>
+
+<div class="card p-4">
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            Submit Request
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
