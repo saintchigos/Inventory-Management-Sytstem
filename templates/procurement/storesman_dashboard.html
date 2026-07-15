@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Approved Requests — Ready for Delivery</h1>
+
+<table class="table table-bordered">
+
+    <thead>
+
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Approved On</th>
+            <th>Actions</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for request in approved_requests %}
+
+        <tr>
+
+            <td>{{ request.display_name }}</td>
+
+            <td>{{ request.requested_quantity }}</td>
+
+            <td>{{ request.created_at|date:"d M Y" }}</td>
+
+            <td>
+
+                {% if request.item %}
+
+                    <a href="{% url 'confirm_delivery' request.id %}"
+                       class="btn btn-warning btn-sm">
+
+                        Confirm Delivery
+
+                    </a>
+
+                {% else %}
+
+                    <a href="{% url 'link_item' request.id %}"
+                       class="btn btn-info btn-sm">
+
+                        Link to Inventory Item
+
+                    </a>
+
+                {% endif %}
+
+            </td>
+        </tr>
+
+        {% empty %}
+
+        <tr>
+            <td colspan="4" class="text-center text-muted py-4">
+                No approved requests waiting for delivery.
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">Morgenster Inventory System</title>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1B2A4A"/>
+      <stop offset="100%" stop-color="#0E1830"/>
+    </linearGradient>
+    <linearGradient id="starGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD98E"/>
+      <stop offset="55%" stop-color="#F5A524"/>
+      <stop offset="100%" stop-color="#E8850F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Badge -->
+  <rect x="2" y="2" width="116" height="116" rx="28" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="116" height="116" rx="28" fill="none" stroke="#2E4270" stroke-width="1.5"/>
+
+  <!-- Horizon arc (subtle, ties star to "dawn" motif) -->
+  <path d="M 22 86 Q 60 66 98 86" fill="none" stroke="#F5A524" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Eight-point morning star -->
+  <polygon points="60.00,16.00 63.64,49.22 74.85,43.15 68.78,54.36 102.00,58.00 68.78,61.64 74.85,72.85 63.64,66.78 60.00,100.00 56.36,66.78 45.15,72.85 51.22,61.64 18.00,58.00 51.22,54.36 45.15,43.15 56.36,49.22"
+    fill="url(#starGrad)"/>
+
+  <!-- Center highlight -->
+  <circle cx="60" cy="58" r="5.5" fill="#FFF4DC"/>
+</svg>

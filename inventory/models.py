@@ -48,3 +48,35 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f"{self.item.name} - {self.movement_type}"
+
+
+class InventoryAuditLog(models.Model):
+
+    ACTION_CHOICES = (
+        ('CREATED', 'Created'),
+        ('EDITED', 'Edited'),
+        ('DELETED', 'Deleted'),
+    )
+
+    item_name = models.CharField(max_length=200)
+
+    action = models.CharField(
+        max_length=10,
+        choices=ACTION_CHOICES
+    )
+
+    details = models.TextField(
+        blank=True,
+        null=True
+    )
+
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.item_name} - {self.action}"

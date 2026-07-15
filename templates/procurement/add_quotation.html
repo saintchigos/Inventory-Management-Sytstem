@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Add Quotations</h1>
+
+<p>For: {{ procurement.item.name }} ({{ procurement.requested_quantity }})</p>
+
+<div class="card p-4">
+
+    <form method="POST" enctype="multipart/form-data">
+
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        {% for form in formset %}
+
+            <div class="border p-3 mb-3">
+
+                <input type="radio" name="selected_index" value="{{ forloop.counter0 }}" required>
+                <label>Select this one</label>
+
+                {{ form.as_p }}
+
+            </div>
+
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">
+
+            Submit Quotations
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

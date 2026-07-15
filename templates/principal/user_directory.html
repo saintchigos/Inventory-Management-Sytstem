@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}All Users | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start mb-1 gap-2">
+    <h1 class="h2 fw-bold text-dark mb-1">System Users</h1>
+    <button type="button" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center no-print" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i> Print
+    </button>
+</div>
+<p class="text-muted mb-4">Full directory of every account and role across the system.</p>
+
+<!-- Role Filter Tabs -->
+<div class="mb-4 d-flex gap-2 flex-wrap">
+    <a href="{% url 'user_directory' %}" class="btn btn-sm {% if not role_filter %}btn-dark{% else %}btn-outline-dark{% endif %}">All</a>
+    {% for role_value, role_label in role_choices %}
+    <a href="?role={{ role_value }}" class="btn btn-sm {% if role_filter == role_value %}btn-dark{% else %}btn-outline-dark{% endif %}">{{ role_label }}</a>
+    {% endfor %}
+</div>
+
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Username</th>
+                        <th class="py-3">Full Name</th>
+                        <th class="py-3">Role</th>
+                        <th class="py-3">Email</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Last Login</th>
+                        <th class="pe-4 py-3">Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ u.username }}</td>
+                        <td>{{ u.get_full_name|default:"—" }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ u.get_role_display }}</span></td>
+                        <td class="text-muted small">{{ u.email|default:"—" }}</td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ u.last_login|date:"d M Y, H:i"|default:"Never" }}</td>
+                        <td class="pe-4 text-muted small">{{ u.date_joined|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">No users found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<p class="text-muted small mt-3">
+    This is a read-only oversight view. User accounts are created and managed by IT via the admin panel.
+</p>
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Procurement Audit | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <h1 class="h2 fw-bold text-dark mb-0">Procurement Audit</h1>
+    <button type="button" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center no-print" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i> Print
+    </button>
+</div>
+
+<!-- Status Filter Tabs -->
+<div class="mb-4 d-flex gap-2 flex-wrap">
+    <a href="{% url 'procurement_audit' %}" class="btn btn-sm {% if not status_filter %}btn-dark{% else %}btn-outline-dark{% endif %}">All</a>
+    <a href="?status=DRAFT" class="btn btn-sm {% if status_filter == 'DRAFT' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Draft</a>
+    <a href="?status=PENDING" class="btn btn-sm {% if status_filter == 'PENDING' %}btn-warning{% else %}btn-outline-warning{% endif %}">Pending</a>
+    <a href="?status=WAITING_PAYMENT" class="btn btn-sm {% if status_filter == 'WAITING_PAYMENT' %}btn-info{% else %}btn-outline-info{% endif %}">Waiting for Payment</a>
+    <a href="?status=PAYMENT_RECEIVED" class="btn btn-sm {% if status_filter == 'PAYMENT_RECEIVED' %}btn-success{% else %}btn-outline-success{% endif %}">Payment Received</a>
+    <a href="?status=REJECTED" class="btn btn-sm {% if status_filter == 'REJECTED' %}btn-danger{% else %}btn-outline-danger{% endif %}">Rejected</a>
+    <a href="?status=DELIVERED" class="btn btn-sm {% if status_filter == 'DELIVERED' %}btn-primary{% else %}btn-outline-primary{% endif %}">Delivered</a>
+</div>
+
+<form method="get" class="mb-4 d-flex align-items-center gap-2">
+    {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+    <label for="actioned_by" class="small text-muted mb-0">Filter by Accounts staff:</label>
+    <select name="actioned_by" id="actioned_by" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+        <option value="">All Accounts Staff</option>
+        {% for accounts_user in accounts_users %}
+        <option value="{{ accounts_user.id }}" {% if actioned_by_filter == accounts_user.id|stringformat:"s" %}selected{% endif %}>{{ accounts_user.username }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item</th>
+                        <th class="py-3">Quantity</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Requested By</th>
+                        <th class="py-3">Actioned By</th>
+                        <th class="py-3">Date</th>
+                        <th class="pe-4 py-3 text-end">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ req.display_name }}</td>
+                        <td>{{ req.requested_quantity }}</td>
+                        <td>
+                            {% if req.status == 'DRAFT' %}
+                                <span class="badge bg-secondary">Draft</span>
+                            {% elif req.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif req.status == 'WAITING_PAYMENT' %}
+                                <span class="badge bg-info text-dark">Waiting for Payment</span>
+                            {% elif req.status == 'PAYMENT_RECEIVED' %}
+                                <span class="badge bg-success">Payment Received</span>
+                            {% elif req.status == 'REJECTED' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% elif req.status == 'DELIVERED' %}
+                                <span class="badge bg-primary">Delivered</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ req.requested_by }}</td>
+                        <td>{{ req.accounts_approved_by|default:"—" }}</td>
+                        <td class="text-muted small">{{ req.created_at|date:"d M Y" }}</td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'request_audit_detail' req.id %}" class="btn btn-sm btn-outline-dark">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">No requests match this filter.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

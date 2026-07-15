@@ -10,8 +10,10 @@
         <h1 class="h2 fw-bold text-dark mb-1">Accounts Dashboard</h1>
         <p class="text-muted mb-md-0">Review procurement thresholds, manage outstanding acquisitions, and monitor fiscal status indicators.</p>
     </div>
-    <!-- Quick Status Counter Indicator Badge -->
-    <div class="mt-2 mt-md-0">
+    <div class="mt-2 mt-md-0 d-flex gap-2 align-items-center flex-wrap">
+        <a href="{% url 'accounts_payments' %}" class="btn btn-dark d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-cash-coin me-2"></i> Go to Payments
+        </a>
         <span class="badge bg-light text-secondary border px-3 py-2 fw-medium">
             <i class="bi bi-clock-history me-1 text-warning"></i> {{ pending_requests.count }} Unresolved Items
         </span>
@@ -21,10 +23,10 @@
 <!-- Refined Analytic Stat Cards -->
 <div class="row g-4 mb-5">
     <!-- Pending Requests Metric Container -->
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-4">
         <div class="card h-100 border-0 border-start border-warning border-4 shadow-sm bg-white">
             <div class="card-body p-4">
-                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Pending Procurement Requests</span>
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Pending Review</span>
                 <div class="d-flex align-items-center justify-content-between">
                     <h2 class="display-6 fw-bold text-dark mb-0">{{ pending_requests.count }}</h2>
                     <div class="bg-warning bg-opacity-10 p-2.5 rounded text-warning">
@@ -35,13 +37,28 @@
         </div>
     </div>
 
-    <!-- Approved Requests Metric Container -->
-    <div class="col-12 col-md-6">
+    <!-- Waiting for Payment Metric Container -->
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 border-start border-info border-4 shadow-sm bg-white">
+            <div class="card-body p-4">
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Waiting for Payment</span>
+                <div class="d-flex align-items-center justify-content-between">
+                    <h2 class="display-6 fw-bold text-info mb-0">{{ waiting_payment_requests.count }}</h2>
+                    <div class="bg-info bg-opacity-10 p-2.5 rounded text-info">
+                        <i class="bi bi-cash-stack fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Received Metric Container -->
+    <div class="col-12 col-md-4">
         <div class="card h-100 border-0 border-start border-success border-4 shadow-sm bg-white">
             <div class="card-body p-4">
-                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Approved Requests Catalog</span>
+                <span class="text-muted fw-medium text-uppercase tracking-wider small d-block mb-1">Recently Paid</span>
                 <div class="d-flex align-items-center justify-content-between">
-                    <h2 class="display-6 fw-bold text-success mb-0">{{ approved_requests.count }}</h2>
+                    <h2 class="display-6 fw-bold text-success mb-0">{{ payment_received_requests.count }}</h2>
                     <div class="bg-success bg-opacity-10 p-2.5 rounded text-success">
                         <i class="bi bi-file-earmark-check-fill fs-3"></i>
                     </div>
@@ -65,18 +82,15 @@
                         <th class="ps-4 py-3">Item Details</th>
                         <th class="py-3">Requested Quantity</th>
                         <th class="py-3">Requested By</th>
-                        <th class="pe-4 py-3 text-end">Pipeline Status</th>
+                        <th class="py-3">Date</th>
+                        <th class="pe-4 py-3 text-end">Review</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for request in pending_requests %}
                     <tr>
                         <td class="ps-4 fw-bold text-dark">
-                            {% if request.item.name %}
-                                {{ request.item.name }}
-                            {% else %}
-                                {{ request.item }}
-                            {% endif %}
+                            {{ request.display_name }}
                         </td>
                         <td class="fw-medium text-secondary">{{ request.requested_quantity }}</td>
                         <td>
@@ -87,17 +101,94 @@
                                 <span class="small text-dark fw-medium">{{ request.requested_by }}</span>
                             </div>
                         </td>
+                        <td class="small text-muted">{{ request.created_at|date:"d M Y" }}</td>
                         <td class="pe-4 text-end">
-                            <span class="badge bg-warning bg-opacity-10 text-warning px-2.5 py-1 rounded-pill fw-medium">
-                                <i class="bi bi-dash-circle-fill me-1 x-small"></i> {{ request.status }}
-                            </span>
+                            <a href="{% url 'request_detail' request.id %}"
+                               class="btn btn-primary btn-sm">
+                                Review
+                            </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-5">
+                        <td colspan="5" class="text-center text-muted py-5">
                             <i class="bi bi-clipboard-check text-muted display-6 d-block mb-2"></i>
                             <span class="fw-medium small d-block">No pending acquisitions require review right now.</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Waiting for Payment -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Waiting for Payment</h5>
+        <a href="{% url 'accounts_payments' %}" class="small">Go to Payments &rarr;</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item Details</th>
+                        <th class="py-3">Requested Quantity</th>
+                        <th class="py-3">Approved By</th>
+                        <th class="pe-4 py-3">Approved On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in waiting_payment_requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ request.display_name }}</td>
+                        <td class="fw-medium text-secondary">{{ request.requested_quantity }}</td>
+                        <td class="small text-dark">{{ request.accounts_approved_by|default:"—" }}</td>
+                        <td class="pe-4 small text-muted">{{ request.updated_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4 small">
+                            Nothing waiting on payment right now.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Rejected History -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="fw-bold text-dark mb-0">Rejected Requests</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item Details</th>
+                        <th class="py-3">Requested Quantity</th>
+                        <th class="py-3">Requested By</th>
+                        <th class="pe-4 py-3">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in rejected_requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ request.display_name }}</td>
+                        <td class="fw-medium text-secondary">{{ request.requested_quantity }}</td>
+                        <td class="small text-dark">{{ request.requested_by }}</td>
+                        <td class="pe-4 small text-muted">{{ request.created_at|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4 small">
+                            No rejected requests.
                         </td>
                     </tr>
                     {% endfor %}

@@ -1,0 +1,382 @@
+/* =========================================================================
+   Morgenster Inventory System — Design System
+   Theme: "Dawn Ledger" — a night-into-morning palette (navy → gold) tied to
+   the Morgenster ("Morning Star") name, applied as a re-skin over Bootstrap 5.
+   ========================================================================= */
+
+:root {
+  /* Core palette */
+  --ms-ink: #0E1830;          /* deep night navy — chrome, headers */
+  --ms-ink-soft: #1B2A4A;     /* lighter navy — hover/secondary surfaces */
+  --ms-ink-line: #2E4270;     /* hairlines on navy */
+
+  --ms-dawn: #F5A524;         /* morning star gold — primary accent */
+  --ms-dawn-soft: #FFD98E;    /* pale gold — highlights */
+  --ms-dawn-deep: #C97A0E;    /* deep gold — text-on-light accent */
+
+  --ms-coral: #E4572E;        /* sunrise coral — danger/alerts */
+  --ms-teal: #1E8F6F;         /* dawn teal-green — success */
+  --ms-sky: #3B7EC4;          /* muted sky blue — info */
+
+  --ms-bg: #FAF8F4;           /* warm paper background */
+  --ms-surface: #FFFFFF;
+  --ms-text: #1A2333;
+  --ms-muted: #667085;
+  --ms-border: #E9E4D8;
+
+  --ms-radius: 14px;
+  --ms-radius-sm: 10px;
+  --ms-shadow: 0 2px 10px rgba(14, 24, 48, 0.06), 0 1px 2px rgba(14, 24, 48, 0.05);
+  --ms-shadow-md: 0 8px 24px rgba(14, 24, 48, 0.10);
+
+  /* Bootstrap variable overrides */
+  --bs-primary: var(--ms-dawn-deep);
+  --bs-primary-rgb: 201, 122, 14;
+  --bs-success: var(--ms-teal);
+  --bs-success-rgb: 30, 143, 111;
+  --bs-danger: var(--ms-coral);
+  --bs-danger-rgb: 228, 87, 46;
+  --bs-warning: var(--ms-dawn);
+  --bs-warning-rgb: 245, 165, 36;
+  --bs-info: var(--ms-sky);
+  --bs-info-rgb: 59, 126, 196;
+  --bs-dark: var(--ms-ink);
+  --bs-dark-rgb: 14, 24, 48;
+  --bs-body-font-family: 'Inter', -apple-system, sans-serif;
+  --bs-border-radius: var(--ms-radius-sm);
+  --bs-border-radius-lg: var(--ms-radius);
+  --bs-link-color: var(--ms-dawn-deep);
+  --bs-link-hover-color: var(--ms-ink);
+}
+
+body {
+  background-color: var(--ms-bg);
+  color: var(--ms-text);
+}
+
+h1, h2, h3, h4, h5, h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-family: 'Sora', 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--ms-ink);
+}
+
+/* ---------- Navbar & Brand ---------- */
+.navbar.bg-dark {
+  background-color: var(--ms-ink) !important;
+  background-image: linear-gradient(90deg, var(--ms-ink) 0%, var(--ms-ink-soft) 100%);
+  border-bottom: 2px solid var(--ms-dawn);
+}
+
+.navbar-brand {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.navbar-brand .brand-mark {
+  height: 42px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45));
+}
+
+.navbar-brand .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.navbar-brand .brand-text small {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ms-dawn-soft);
+  text-transform: uppercase;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
+  border-radius: var(--ms-radius-sm);
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+  color: #fff;
+  background-color: rgba(255,255,255,0.08);
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+  color: var(--ms-dawn-soft);
+}
+
+.navbar .bg-secondary {
+  background-color: var(--ms-dawn) !important;
+}
+.navbar .bg-secondary i {
+  color: var(--ms-ink) !important;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  border-radius: var(--ms-radius);
+}
+.card.shadow-sm {
+  box-shadow: var(--ms-shadow) !important;
+}
+.card-header {
+  border-top-left-radius: var(--ms-radius) !important;
+  border-top-right-radius: var(--ms-radius) !important;
+  font-family: 'Sora', sans-serif;
+}
+
+/* Accent left-border stat cards keep semantic colors but on the new palette */
+.card.border-primary { border-left-color: var(--ms-dawn-deep) !important; }
+.card.border-success { border-left-color: var(--ms-teal) !important; }
+.card.border-info { border-left-color: var(--ms-sky) !important; }
+.card.border-danger { border-left-color: var(--ms-coral) !important; }
+.card.border-warning { border-left-color: var(--ms-dawn) !important; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: var(--ms-radius-sm);
+}
+.btn-dark {
+  background-color: var(--ms-ink);
+  border-color: var(--ms-ink);
+}
+.btn-dark:hover {
+  background-color: var(--ms-ink-soft);
+  border-color: var(--ms-ink-soft);
+}
+.btn-outline-dark {
+  color: var(--ms-ink);
+  border-color: var(--ms-ink);
+}
+.btn-outline-dark:hover {
+  background-color: var(--ms-ink);
+  border-color: var(--ms-ink);
+}
+.btn-primary {
+  background-color: var(--ms-dawn-deep);
+  border-color: var(--ms-dawn-deep);
+}
+.btn-primary:hover {
+  background-color: #a8660c;
+  border-color: #a8660c;
+}
+
+/* ---------- Badges & pills ---------- */
+.badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge.bg-secondary { background-color: #8891A0 !important; }
+
+/* ---------- Tables ---------- */
+.table thead.table-light th,
+.table > :not(caption) > * > th {
+  background-color: #F4F0E7;
+  color: var(--ms-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border-bottom-width: 1px;
+}
+.table-hover > tbody > tr:hover > * {
+  background-color: #FDF6E8;
+}
+
+/* ---------- Backgrounds used for icon chips ---------- */
+.bg-primary.bg-opacity-10 { background-color: rgba(201, 122, 14, 0.10) !important; }
+.text-primary { color: var(--ms-dawn-deep) !important; }
+.bg-success.bg-opacity-10 { background-color: rgba(30, 143, 111, 0.10) !important; }
+.text-success { color: var(--ms-teal) !important; }
+.bg-info.bg-opacity-10 { background-color: rgba(59, 126, 196, 0.10) !important; }
+.text-info { color: var(--ms-sky) !important; }
+.bg-danger.bg-opacity-10 { background-color: rgba(228, 87, 46, 0.10) !important; }
+.text-danger { color: var(--ms-coral) !important; }
+.bg-warning.bg-opacity-10 { background-color: rgba(245, 165, 36, 0.14) !important; }
+
+/* ---------- Login card polish (used on users/login.html) ---------- */
+.ms-auth-shell {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ms-auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--ms-surface);
+  border-radius: var(--ms-radius);
+  box-shadow: var(--ms-shadow-md);
+  padding: 2.25rem;
+  border-top: 4px solid var(--ms-dawn);
+}
+
+/* ---------- Footer ---------- */
+footer.bg-white {
+  background-color: var(--ms-surface) !important;
+  border-top-color: var(--ms-border) !important;
+}
+
+/* ---------- Misc ---------- */
+::selection {
+  background-color: var(--ms-dawn-soft);
+}
+a { text-decoration: none; }
+.small.text-muted, .text-muted { color: var(--ms-muted) !important; }
+
+/* ---------- App Shell / Left Sidebar Layout ---------- */
+.ms-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.ms-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background-color: var(--ms-ink);
+  background-image: linear-gradient(180deg, var(--ms-ink) 0%, var(--ms-ink-soft) 100%);
+  border-right: 2px solid var(--ms-dawn);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.ms-sidebar-inner {
+  padding: 1.25rem 1rem;
+  min-height: 100%;
+}
+
+.ms-sidebar-brand {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem 1.25rem 0.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ms-ink-line);
+}
+
+.ms-sidebar-brand .brand-mark,
+.ms-mobile-brand .brand-mark {
+  height: 36px;
+  width: auto;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45));
+}
+
+.ms-sidebar-brand .brand-text,
+.ms-mobile-brand .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  color: #fff;
+}
+
+.ms-sidebar-brand .brand-text small,
+.ms-mobile-brand .brand-text small {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ms-dawn-soft);
+  text-transform: uppercase;
+}
+
+.ms-sidebar-nav .nav-link {
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
+  font-size: 0.92rem;
+  border-radius: var(--ms-radius-sm);
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.ms-sidebar-nav .nav-link i {
+  width: 1.1rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.ms-sidebar-nav .nav-link:hover,
+.ms-sidebar-nav .nav-link:focus {
+  color: #fff;
+  background-color: rgba(255,255,255,0.08);
+}
+
+.ms-sidebar-nav .nav-link.active {
+  color: var(--ms-ink);
+  background-color: var(--ms-dawn);
+  font-weight: 600;
+}
+
+.ms-sidebar-section {
+  color: var(--ms-dawn-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 1rem 0.75rem 0.35rem 0.75rem;
+}
+
+.ms-sidebar-footer {
+  border-top: 1px solid var(--ms-ink-line);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.ms-user-toggle .fw-medium {
+  max-width: 140px;
+}
+
+.ms-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-mobile-bar {
+  background-color: var(--ms-ink);
+  border-bottom: 2px solid var(--ms-dawn);
+  padding: 0.65rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+@media (min-width: 992px) {
+  .ms-mobile-bar { display: none !important; }
+}
+
+/* ---------- Print ---------- */
+@media print {
+  .no-print { display: none !important; }
+  .ms-shell { display: block; }
+  .ms-sidebar, .ms-mobile-bar { display: none !important; }
+  .ms-content { width: 100% !important; }
+  .ms-main-print { padding: 0 !important; margin: 0 !important; }
+  body { background: #fff !important; }
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; break-inside: avoid; }
+  .table-responsive { overflow: visible !important; }
+  a[href]:after { content: "" !important; }
+}

@@ -17,6 +17,23 @@
         </a>
     </div>
     {% endif %}
+
+    {% if user.role == 'procurement' %}
+    <div class="mt-3 mt-sm-0 d-flex gap-2">
+        <a href="{% url 'create_procurement' %}" class="btn btn-primary d-inline-flex align-items-center shadow-sm fw-medium px-3">
+            <i class="bi bi-plus-lg me-2"></i> Create Request
+        </a>
+        <a href="{% url 'procurement_list' %}" class="btn btn-outline-dark d-inline-flex align-items-center shadow-sm fw-medium px-3">
+            <i class="bi bi-list-ul me-2"></i> My Requests
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="mt-3 mt-sm-0 ms-sm-2">
+        <button type="button" class="btn btn-outline-dark d-inline-flex align-items-center shadow-sm fw-medium px-3 no-print" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i> Print
+        </button>
+    </div>
 </div>
 
 <!-- Filters Bar Card -->
@@ -77,7 +94,7 @@
                         <th class="py-3">Quantity</th>
                         <th class="py-3">Location</th>
                         <th class="py-3">Status</th>
-                        {% if user.role == 'storesman' %}
+                        {% if user.role == 'storesman' or user.role == 'procurement' %}
                             <th class="pe-4 py-3 text-end">Actions</th>
                         {% endif %}
                     </tr>
@@ -119,6 +136,14 @@
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </div>
+                        </td>
+                        {% elif user.role == 'procurement' %}
+                        <td class="pe-4 text-end">
+                            {% if item.quantity <= item.minimum_stock %}
+                                <a href="{% url 'create_procurement' %}?item={{ item.id }}" class="btn btn-sm btn-primary px-2.5 py-1">
+                                    <i class="bi bi-cart-plus me-1"></i> Request
+                                </a>
+                            {% endif %}
                         </td>
                         {% endif %}
                     </tr>

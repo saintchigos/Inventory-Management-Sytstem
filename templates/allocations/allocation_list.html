@@ -28,6 +28,7 @@
                         <th class="py-3">Department</th>
                         <th class="py-3">Quantity</th>
                         <th class="py-3">Receiver</th>
+                        <th class="py-3">Allocated By</th>
                         <th class="pe-4 py-3">Allocation Date</th>
                     </tr>
                 </thead>
@@ -60,6 +61,11 @@
                                 <i class="bi bi-person-check me-1.5 text-muted"></i> {{ allocation.receiver_name }}
                             </span>
                         </td>
+
+                        <!-- Allocated By -->
+                        <td class="text-secondary small">
+                            {{ allocation.allocated_by|default:"—" }}
+                        </td>
                         
                         <!-- Timestamp Ledger -->
                         <td class="pe-4 text-muted small">
@@ -71,7 +77,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             <i class="bi bi-journal-x display-6 d-block mb-3 text-secondary"></i>
                             No stock allocations have been logged in the ledger yet.
                         </td>

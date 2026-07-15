@@ -21,4 +21,12 @@ urlpatterns = [
     views.storesman_dashboard,
     name='storesman_dashboard'
 ),
+
+    path('stock-movements/',
+         views.stock_movements,
+         name='stock_movements'),
+
+    path('inventory-audit/',
+         views.inventory_audit,
+         name='inventory_audit'),
 ]

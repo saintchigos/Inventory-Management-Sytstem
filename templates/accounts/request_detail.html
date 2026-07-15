@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Request | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<h1 class="h2 fw-bold text-dark mb-3">Review Procurement Request</h1>
+
+<button onclick="window.print()" class="btn btn-outline-dark mb-3 no-print">
+    <i class="bi bi-printer"></i> Print Quotations
+</button>
+
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-body p-4">
+
+        <p><strong>Item:</strong> {{ procurement.display_name }}</p>
+        <p><strong>Quantity:</strong> {{ procurement.requested_quantity }}</p>
+        <p><strong>Requested by:</strong> {{ procurement.requested_by }}</p>
+        <p><strong>Requested on:</strong> {{ procurement.created_at|date:"d M Y, H:i" }}</p>
+        <p class="mb-0"><strong>Status:</strong>
+            {% if procurement.status == 'DRAFT' %}
+                <span class="badge bg-secondary">Draft</span>
+            {% elif procurement.status == 'PENDING' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+            {% elif procurement.status == 'WAITING_PAYMENT' %}
+                <span class="badge bg-info text-dark">Waiting for Payment</span>
+            {% elif procurement.status == 'PAYMENT_RECEIVED' %}
+                <span class="badge bg-success">Payment Received</span>
+            {% elif procurement.status == 'REJECTED' %}
+                <span class="badge bg-danger">Rejected</span>
+            {% elif procurement.status == 'DELIVERED' %}
+                <span class="badge bg-primary">Delivered</span>
+            {% endif %}
+        </p>
+
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3">Quotations Submitted</h4>
+
+<div class="row g-3 mb-4">
+
+    {% for quotation in quotations %}
+
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm {% if quotation == procurement.selected_quotation %}border-start border-success border-4{% endif %}">
+            <div class="card-body p-3">
+
+                {% if quotation == procurement.selected_quotation %}
+                    <span class="badge bg-success mb-2">Procurement's Choice</span>
+                {% endif %}
+
+                <p class="mb-1"><strong>{{ quotation.vendor_name }}</strong></p>
+                <p class="mb-1">Price: {{ quotation.price }}</p>
+                <a href="{{ quotation.document.url }}" target="_blank" class="no-print">View document</a>
+
+            </div>
+        </div>
+    </div>
+
+    {% empty %}
+
+    <p class="text-muted">No quotations submitted yet.</p>
+
+    {% endfor %}
+
+</div>
+
+{% if procurement.status == 'PENDING' and procurement.selected_quotation %}
+
+<div class="card border-0 shadow-sm bg-white no-print">
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-3">Approve or Reject</h5>
+        <p class="text-muted small mb-3">Approving moves this request to <strong>Waiting for Payment</strong>. You'll upload proof of payment separately once the transfer has actually gone through, from the Payments page.</p>
+
+        <form method="POST" action="{% url 'approve_request' procurement.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-lg me-1"></i> Approve Request
+            </button>
+        </form>
+
+        <form method="POST" action="{% url 'reject_request' procurement.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-x-lg me-1"></i> Reject Request
+            </button>
+        </form>
+
+    </div>
+</div>
+
+{% elif procurement.status == 'PENDING' %}
+
+<div class="alert alert-warning no-print">
+    No quotation has been selected by procurement yet — nothing to review.
+</div>
+
+{% elif procurement.status == 'WAITING_PAYMENT' %}
+
+<div class="card border-0 shadow-sm bg-white no-print">
+    <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-1">Awaiting Payment</h5>
+        <p class="text-muted small mb-3">Approved by {{ procurement.accounts_approved_by }} on {{ procurement.updated_at|date:"d M Y, H:i" }}. Once the payment has been made, upload proof below to mark it received.</p>
+
+        <form method="POST"
+              enctype="multipart/form-data"
+              action="{% url 'upload_payment_proof' procurement.id %}">
+
+            {% csrf_token %}
+            <input type="hidden" name="next" value="request_detail">
+
+            {{ payment_form.as_p }}
+
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-upload me-1"></i> Upload Proof &amp; Mark Payment Received
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+{% elif procurement.status == 'PAYMENT_RECEIVED' or procurement.status == 'DELIVERED' %}
+
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">Payment Confirmed</h5>
+        <p class="mb-1"><strong>Confirmed by:</strong> {{ procurement.payment_confirmed_by|default:"—" }}</p>
+        <p class="mb-1"><strong>Confirmed on:</strong> {{ procurement.payment_received_at|date:"d M Y, H:i"|default:"—" }}</p>
+        {% if procurement.payment_proof %}
+        <p class="mb-0"><strong>Proof of payment:</strong>
+            <a href="{{ procurement.payment_proof.url }}" target="_blank" class="no-print">View document</a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+{% elif procurement.status == 'REJECTED' %}
+
+<div class="alert alert-danger">
+    This request was rejected by {{ procurement.accounts_approved_by|default:"Accounts" }}.
+</div>
+
+{% endif %}
+
+{% endblock %}

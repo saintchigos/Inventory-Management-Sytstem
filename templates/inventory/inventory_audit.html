@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventory Audit | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
+    <h1 class="h2 fw-bold text-dark mb-0">Inventory Audit Trail</h1>
+    <button type="button" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center no-print" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i> Print
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm bg-white">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item</th>
+                        <th class="py-3">Action</th>
+                        <th class="py-3">Details</th>
+                        <th class="py-3">Performed By</th>
+                        <th class="pe-4 py-3">Date &amp; Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">{{ log.item_name }}</td>
+                        <td>
+                            {% if log.action == 'CREATED' %}
+                                <span class="badge bg-success">Created</span>
+                            {% elif log.action == 'EDITED' %}
+                                <span class="badge bg-warning text-dark">Edited</span>
+                            {% elif log.action == 'DELETED' %}
+                                <span class="badge bg-danger">Deleted</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ log.details }}</td>
+                        <td>{{ log.performed_by }}</td>
+                        <td class="pe-4 text-muted small">{{ log.timestamp|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            No inventory changes recorded yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

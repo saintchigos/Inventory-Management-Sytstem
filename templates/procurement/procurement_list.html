@@ -24,6 +24,7 @@
             <th>Quantity</th>
             <th>Status</th>
             <th>Requested By</th>
+            <th>Date</th>
             <th>Actions</th>
         </tr>
 
@@ -35,40 +36,54 @@
 
         <tr>
 
-            <td>{{ request.item.name }}</td>
+            <td>{{ request.display_name }}</td>
 
             <td>{{ request.requested_quantity }}</td>
 
-            <td>{{ request.status }}</td>
+            <td>
+                {% if request.status == 'DRAFT' %}
+                    <span class="badge bg-secondary">Draft</span>
+                {% elif request.status == 'PENDING' %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                {% elif request.status == 'WAITING_PAYMENT' %}
+                    <span class="badge bg-info text-dark">Waiting for Payment</span>
+                {% elif request.status == 'PAYMENT_RECEIVED' %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle-fill me-1"></i>Payment Received
+                    </span>
+                {% elif request.status == 'REJECTED' %}
+                    <span class="badge bg-danger">Rejected</span>
+                {% elif request.status == 'DELIVERED' %}
+                    <span class="badge bg-primary">Delivered</span>
+                {% endif %}
+            </td>
 
             <td>{{ request.requested_by }}</td>
 
+            <td>{{ request.created_at|date:"d M Y" }}</td>
+
             <td>
 
-                {% if user.role == 'accounts' and request.status == 'PENDING' %}
+                {% if user.role == 'procurement' and request.status == 'DRAFT' %}
 
-                    <a href="{% url 'approve_request' request.id %}"
-                       class="btn btn-success btn-sm">
+                    <a href="{% url 'add_quotation' request.id %}"
+                       class="btn btn-info btn-sm">
 
-                        Approve
-
-                    </a>
-
-                {% endif %}
-
-                {% if user.role == 'storesman' and request.status == 'APPROVED' %}
-
-                    <a href="{% url 'confirm_delivery' request.id %}"
-                       class="btn btn-warning btn-sm">
-
-                        Confirm Delivery
+                        Add Quotation
 
                     </a>
 
                 {% endif %}
 
             </td>
+        </tr>
 
+        {% empty %}
+
+        <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+                No procurement requests yet.
+            </td>
         </tr>
 
         {% endfor %}

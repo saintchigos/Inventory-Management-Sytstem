@@ -6,7 +6,7 @@ from django.db import models
 from .models import Item, Category
 
 
-from .models import Item, StockMovement
+from .models import Item, StockMovement, InventoryAuditLog
 from .forms import ItemForm
 
 from users.permissions import (
@@ -17,11 +17,17 @@ from users.permissions import (
 
 
 
+# View for listing inventory items
+def is_storesman_or_procurement(user):
+    return user.role in ['storesman', 'procurement']
+
 
 @login_required
+@user_passes_test(is_storesman_or_procurement)
 def inventory_list(request):
 
-    items = Item.objects.all()
+    # Get all items and order by name
+    items = Item.objects.all().order_by('name')
 
     # Search
     search_query = request.GET.get('search')
@@ -60,6 +66,7 @@ def inventory_list(request):
                       'categories': categories,
                   })
 
+# View for adding new stock
 @login_required
 @user_passes_test(is_storesman)
 def add_stock(request):
@@ -80,6 +87,14 @@ def add_stock(request):
                 performed_by=request.user
             )
 
+            # Audit log
+            InventoryAuditLog.objects.create(
+                item_name=item.name,
+                action='CREATED',
+                details=f"Item created with quantity {item.quantity}.",
+                performed_by=request.user
+            )
+
             return redirect('inventory_list')
 
     else:
@@ -90,6 +105,7 @@ def add_stock(request):
     })
 
 
+# View for editing stock
 @login_required
 @user_passes_test(is_storesman)
 def edit_stock(request, item_id):
@@ -97,6 +113,10 @@ def edit_stock(request, item_id):
     item = get_object_or_404(Item, id=item_id)
 
     old_quantity = item.quantity
+    old_name = item.name
+    old_category = item.category
+    old_location = item.location
+    old_minimum_stock = item.minimum_stock
 
     if request.method == 'POST':
 
@@ -122,6 +142,33 @@ def edit_stock(request, item_id):
                     performed_by=request.user
                 )
 
+            # Build a readable summary of what changed
+            changes = []
+
+            if old_name != updated_item.name:
+                changes.append(f"Name: '{old_name}' -> '{updated_item.name}'")
+
+            if old_category != updated_item.category:
+                changes.append(f"Category: '{old_category}' -> '{updated_item.category}'")
+
+            if old_location != updated_item.location:
+                changes.append(f"Location: '{old_location}' -> '{updated_item.location}'")
+
+            if old_minimum_stock != updated_item.minimum_stock:
+                changes.append(f"Minimum stock: {old_minimum_stock} -> {updated_item.minimum_stock}")
+
+            if quantity_difference != 0:
+                changes.append(f"Quantity: {old_quantity} -> {updated_item.quantity}")
+
+            if changes:
+
+                InventoryAuditLog.objects.create(
+                    item_name=updated_item.name,
+                    action='EDITED',
+                    details="; ".join(changes),
+                    performed_by=request.user
+                )
+
             return redirect('inventory_list')
 
     else:
@@ -132,6 +179,7 @@ def edit_stock(request, item_id):
     })
 
 
+# View for deleting stock
 @login_required
 @user_passes_test(is_storesman)
 def delete_stock(request, item_id):
@@ -140,35 +188,24 @@ def delete_stock(request, item_id):
 
     if request.method == 'POST':
 
+        item_name = item.name
+        item_quantity = item.quantity
+
         item.delete()
+
+        # Audit log (snapshot taken before deletion, since the item is now gone)
+        InventoryAuditLog.objects.create(
+            item_name=item_name,
+            action='DELETED',
+            details=f"Item deleted while it had {item_quantity} units in stock.",
+            performed_by=request.user
+        )
 
         return redirect('inventory_list')
 
     return render(request, 'inventory/delete_stock.html', {
         'item': item
     })
-
-
-# @login_required
-# @user_passes_test(is_accounts)
-# def accounts_dashboard(request):
-
-#     return render(request, 'inventory/accounts_dashboard.html')
-
-
-# @login_required
-# @user_passes_test(is_principal)
-# def principal_dashboard(request):
-
-#     items = Item.objects.all()
-
-#     return render(request, 'inventory/principal_dashboard.html', {
-#         'items': items
-#     })
-
-
-
-
 
 
 import json
@@ -230,3 +267,29 @@ def storesman_dashboard(request):
         'inventory/storesman_dashboard.html',
         context
     )
+
+
+def is_storesman_or_principal(user):
+    return user.role in ['storesman', 'principal']
+
+
+@login_required
+@user_passes_test(is_storesman_or_principal)
+def stock_movements(request):
+
+    movements = StockMovement.objects.all().order_by('-date')
+
+    return render(request, 'inventory/stock_movements.html', {
+        'movements': movements
+    })
+
+
+@login_required
+@user_passes_test(is_principal)
+def inventory_audit(request):
+
+    logs = InventoryAuditLog.objects.all().order_by('-timestamp')
+
+    return render(request, 'inventory/inventory_audit.html', {
+        'logs': logs
+    })

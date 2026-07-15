@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Link to Inventory Item</h1>
+
+<p>Request: {{ procurement.display_name }} ({{ procurement.requested_quantity }})</p>
+
+<p class="text-muted">
+    This item doesn't exist in inventory yet. Add it under
+    <a href="{% url 'add_stock' %}">Add New Item</a> first, then come back and select it here.
+</p>
+
+<div class="card p-4">
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">
+
+            Link Item
+
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

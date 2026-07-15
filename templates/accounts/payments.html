@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-1 gap-2">
+    <h1 class="h2 fw-bold text-dark mb-1">Payments</h1>
+    <button type="button" class="btn btn-outline-dark btn-sm d-inline-flex align-items-center no-print" onclick="window.print()">
+        <i class="bi bi-printer me-2"></i> Print
+    </button>
+</div>
+<p class="text-muted mb-4">Requests you've approved, waiting on payment to go out, and the record of everything already paid.</p>
+
+<!-- Awaiting Payment -->
+<div class="card border-0 shadow-sm bg-white mb-5">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Awaiting Payment</h5>
+        <span class="badge bg-info bg-opacity-25 text-info-emphasis rounded-pill px-2.5 py-1 fw-bold">{{ waiting_payment_requests.count }} to pay</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item</th>
+                        <th class="py-3">Quantity</th>
+                        <th class="py-3">Vendor / Price</th>
+                        <th class="py-3">Approved By</th>
+                        <th class="py-3">Approved On</th>
+                        <th class="pe-4 py-3 no-print">Proof of Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in waiting_payment_requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">
+                            {{ req.display_name }}
+                            <a href="{% url 'request_detail' req.id %}" class="small ms-2 no-print">view</a>
+                        </td>
+                        <td class="fw-medium text-secondary">{{ req.requested_quantity }}</td>
+                        <td class="small">
+                            {% if req.selected_quotation %}
+                                {{ req.selected_quotation.vendor_name }} — {{ req.selected_quotation.price }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ req.accounts_approved_by|default:"—" }}</td>
+                        <td class="small text-muted">{{ req.updated_at|date:"d M Y" }}</td>
+                        <td class="pe-4 no-print">
+                            <form method="POST" enctype="multipart/form-data" action="{% url 'upload_payment_proof' req.id %}" class="d-flex align-items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="accounts_payments">
+                                <input type="file" name="payment_proof" class="form-control form-control-sm" style="max-width: 220px;" required>
+                                <button type="submit" class="btn btn-sm btn-success text-nowrap">
+                                    <i class="bi bi-upload"></i> Mark Paid
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-check2-circle text-muted display-6 d-block mb-2"></i>
+                            Nothing waiting on payment right now.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Paid / Payment Received -->
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Paid</h5>
+        <span class="text-muted small">{{ paid_requests.count }} record{{ paid_requests.count|pluralize }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted uppercase small">
+                    <tr>
+                        <th class="ps-4 py-3">Item</th>
+                        <th class="py-3">Quantity</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Confirmed By</th>
+                        <th class="py-3">Paid On</th>
+                        <th class="pe-4 py-3 no-print">Proof</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in paid_requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">
+                            {{ req.display_name }}
+                            <a href="{% url 'request_detail' req.id %}" class="small ms-2 no-print">view</a>
+                        </td>
+                        <td class="fw-medium text-secondary">{{ req.requested_quantity }}</td>
+                        <td>
+                            {% if req.status == 'DELIVERED' %}
+                                <span class="badge bg-primary">Delivered</span>
+                            {% else %}
+                                <span class="badge bg-success">Payment Received</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ req.payment_confirmed_by|default:"—" }}</td>
+                        <td class="small text-muted">{{ req.payment_received_at|date:"d M Y, H:i"|default:"—" }}</td>
+                        <td class="pe-4 no-print">
+                            {% if req.payment_proof %}
+                            <a href="{{ req.payment_proof.url }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                                <i class="bi bi-file-earmark-text"></i> View
+                            </a>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">No payments recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

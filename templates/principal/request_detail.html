@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Audit | Morgenster Inventory{% endblock %}
+
+{% block content %}
+
+<h1 class="h2 fw-bold text-dark mb-3">Procurement Request Audit</h1>
+
+<button onclick="window.print()" class="btn btn-outline-dark mb-3 no-print">
+    <i class="bi bi-printer"></i> Print
+</button>
+
+<div class="card border-0 shadow-sm bg-white mb-4">
+    <div class="card-body p-4">
+
+        <p><strong>Item:</strong> {{ procurement.display_name }}</p>
+        <p><strong>Quantity:</strong> {{ procurement.requested_quantity }}</p>
+        <p><strong>Status:</strong>
+            {% if procurement.status == 'DRAFT' %}
+                <span class="badge bg-secondary">Draft</span>
+            {% elif procurement.status == 'PENDING' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+            {% elif procurement.status == 'WAITING_PAYMENT' %}
+                <span class="badge bg-info text-dark">Waiting for Payment</span>
+            {% elif procurement.status == 'PAYMENT_RECEIVED' %}
+                <span class="badge bg-success">Payment Received</span>
+            {% elif procurement.status == 'REJECTED' %}
+                <span class="badge bg-danger">Rejected</span>
+            {% elif procurement.status == 'DELIVERED' %}
+                <span class="badge bg-primary">Delivered</span>
+            {% endif %}
+        </p>
+        <p><strong>Requested by:</strong> {{ procurement.requested_by }}</p>
+        <p><strong>Requested on:</strong> {{ procurement.created_at|date:"d M Y, H:i" }}</p>
+        <p><strong>Approved by (Accounts):</strong> {{ procurement.accounts_approved_by|default:"Not yet actioned" }}</p>
+
+        {% if procurement.payment_confirmed_by %}
+        <p><strong>Payment confirmed by:</strong> {{ procurement.payment_confirmed_by }} on {{ procurement.payment_received_at|date:"d M Y, H:i" }}</p>
+        {% endif %}
+
+        {% if procurement.payment_proof %}
+        <p><strong>Proof of Payment:</strong>
+            <a href="{{ procurement.payment_proof.url }}" target="_blank" class="no-print">View document</a>
+        </p>
+        {% endif %}
+
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3">Quotations Submitted</h4>
+
+<div class="row g-3 mb-4">
+
+    {% for quotation in quotations %}
+
+    <div class="col-12 col-md-4">
+        <div class="card h-100 border-0 shadow-sm {% if quotation == procurement.selected_quotation %}border-start border-success border-4{% endif %}">
+            <div class="card-body p-3">
+
+                {% if quotation == procurement.selected_quotation %}
+                    <span class="badge bg-success mb-2">Procurement's Choice</span>
+                {% endif %}
+
+                <p class="mb-1"><strong>{{ quotation.vendor_name }}</strong></p>
+                <p class="mb-1">Price: {{ quotation.price }}</p>
+                <p class="mb-1 text-muted small">Uploaded by {{ quotation.uploaded_by }} on {{ quotation.uploaded_at|date:"d M Y" }}</p>
+                <a href="{{ quotation.document.url }}" target="_blank" class="no-print">View document</a>
+
+            </div>
+        </div>
+    </div>
+
+    {% empty %}
+
+    <p class="text-muted">No quotations submitted for this request.</p>
+
+    {% endfor %}
+
+</div>
+
+<a href="{% url 'procurement_audit' %}" class="btn btn-outline-dark no-print">&larr; Back to audit list</a>
+
+{% endblock %}
